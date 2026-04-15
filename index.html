@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AU Job Matcher</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: #f0ece3;
+  color: #1a1a1a;
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+.header {
+  padding: 2.5rem 3rem 0;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.header-top {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+.key-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #fff;
+  border: 1.5px solid #d8d0c0;
+  border-radius: 999px;
+  padding: 0.45rem 1rem 0.45rem 0.75rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #555;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.key-pill:hover { border-color: #3a7ca5; }
+.key-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #ccc;
+}
+.key-dot.set { background: #5aab6e; }
+
+.h1 {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: clamp(3rem, 7vw, 5.5rem);
+  line-height: 1;
+  letter-spacing: -1px;
+}
+.h2-italic {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(2.2rem, 5vw, 4rem);
+  color: #3a7ca5;
+  line-height: 1.1;
+  margin-top: -0.15rem;
+}
+.subtitle {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.15em;
+  color: #aaa;
+  margin-top: 0.6rem;
+  text-transform: uppercase;
+}
+
+/* ── KEY OVERLAY ── */
+.key-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(20,15,10,0.4);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.key-overlay.show { display: flex; }
+.key-modal {
+  background: #f0ece3;
+  border-radius: 20px;
+  padding: 2rem;
+  max-width: 460px;
+  width: 100%;
+  border: 1px solid #d8d0c0;
+}
+.key-modal-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  margin-bottom: 0.4rem;
+}
+.key-modal p { font-size: 0.85rem; color: #666; line-height: 1.6; margin-bottom: 1rem; }
+.key-modal a { color: #3a7ca5; }
+.privacy-note {
+  background: #e4f0e8;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  font-size: 0.8rem;
+  color: #2d6b3a;
+  margin-bottom: 1.25rem;
+  line-height: 1.6;
+}
+.key-row { display: flex; gap: 0.5rem; }
+.key-row input {
+  flex: 1;
+  border: 1.5px solid #d8d0c0;
+  border-radius: 10px;
+  background: #fff;
+  padding: 0.6rem 0.9rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.82rem;
+  color: #1a1a1a;
+  outline: none;
+}
+.key-row input:focus { border-color: #3a7ca5; }
+.btn-save {
+  background: #1a1a1a;
+  color: #f0ece3;
+  border: none;
+  border-radius: 10px;
+  padding: 0.6rem 1.1rem;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn-save:hover { background: #333; }
+
+/* ── MAIN ── */
+.main {
+  max-width: 1100px;
+  margin: 2.5rem auto 4rem;
+  padding: 0 3rem;
+}
+@media (max-width: 700px) {
+  .header { padding: 2rem 1.25rem 0; }
+  .main { padding: 0 1.25rem; }
+}
+
+.section-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #aaa;
+  margin-bottom: 0.6rem;
+}
+
+/* ── INPUT CARD ── */
+.input-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 2rem;
+  border: 1px solid #e0d8c8;
+}
+
+.tab-row {
+  display: inline-flex;
+  gap: 0.3rem;
+  background: #f0ece3;
+  border-radius: 999px;
+  padding: 4px;
+  margin-bottom: 1rem;
+}
+.tab-btn {
+  background: none;
+  border: none;
+  border-radius: 999px;
+  padding: 0.38rem 0.9rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #999;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.tab-btn.active { background: #fff; color: #1a1a1a; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #aaa;
+  margin-bottom: 0.4rem;
+}
+
+input[type="text"], textarea {
+  width: 100%;
+  border: 1.5px solid #e8e0d0;
+  border-radius: 10px;
+  background: #f8f5f0;
+  padding: 0.65rem 0.9rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.92rem;
+  color: #1a1a1a;
+  outline: none;
+  transition: border-color 0.15s, background 0.15s;
+}
+input[type="text"]:focus, textarea:focus { border-color: #3a7ca5; background: #fff; }
+textarea { resize: vertical; min-height: 120px; }
+
+.hint { font-size: 0.76rem; color: #bbb; margin-top: 0.4rem; }
+
+.divider { border: none; border-top: 1px dashed #e8e0d0; margin: 1.5rem 0; }
+
+.drop-zone {
+  border: 2px dashed #d8d0c0;
+  border-radius: 14px;
+  background: #f8f5f0;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.drop-zone:hover { border-color: #3a7ca5; background: #eef4fa; }
+.drop-icon { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
+.drop-label { font-size: 0.85rem; color: #888; }
+.drop-label strong { color: #3a7ca5; }
+.file-ready-text { color: #5aab6e; font-weight: 600; }
+#file-input { display: none; }
+
+.btn-analyse {
+  width: 100%;
+  padding: 1rem;
+  background: #1a1a1a;
+  color: #f0ece3;
+  border: none;
+  border-radius: 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 1.5rem;
+  transition: background 0.15s, transform 0.1s;
+  letter-spacing: 0.02em;
+}
+.btn-analyse:hover { background: #2d2d2d; }
+.btn-analyse:active { transform: scale(0.99); }
+.btn-analyse:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.error-box {
+  display: none;
+  background: #fde8e8;
+  border: 1.5px solid #e8a0a0;
+  border-radius: 10px;
+  padding: 0.8rem 1rem;
+  font-size: 0.85rem;
+  color: #b84040;
+  margin-top: 1rem;
+}
+
+/* ── LOADING ── */
+.loading {
+  display: none;
+  text-align: center;
+  padding: 3.5rem 0;
+}
+.loading-emoji {
+  font-size: 2.8rem;
+  display: block;
+  margin-bottom: 0.75rem;
+  animation: bob 1.3s ease-in-out infinite;
+}
+@keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+.loading p { color: #999; font-size: 0.9rem; }
+
+/* ── RESULTS ── */
+.results { display: none; }
+
+.score-hero {
+  background: #fff;
+  border-radius: 20px;
+  padding: 2rem;
+  border: 1px solid #e0d8c8;
+  margin-bottom: 1.25rem;
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.score-badge {
+  width: 96px; height: 96px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-family: 'DM Mono', monospace;
+}
+.score-badge .n { font-size: 2.2rem; line-height: 1; }
+.score-badge .pct { font-size: 0.68rem; letter-spacing: 0.1em; margin-top: 2px; }
+.score-high { background: #d4f0db; color: #2d7a42; border: 2px solid #5aab6e; }
+.score-mid  { background: #fdefd5; color: #a06020; border: 2px solid #e8a840; }
+.score-low  { background: #fde0d8; color: #b84040; border: 2px solid #e88080; }
+
+.score-text h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.55rem;
+  margin-bottom: 0.4rem;
+}
+.score-text p { font-size: 0.9rem; color: #666; line-height: 1.7; max-width: 520px; }
+
+.result-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.result-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.25rem;
+  border: 1px solid #e0d8c8;
+}
+.card-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.9rem;
+}
+.card-ico { font-size: 1rem; }
+.card-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.result-card ul { list-style: none; }
+.result-card li {
+  font-size: 0.85rem;
+  padding: 0.28rem 0 0.28rem 1.1rem;
+  position: relative;
+  color: #333;
+  line-height: 1.5;
+  border-bottom: 1px solid #f5f0e8;
+}
+.result-card li:last-child { border-bottom: none; }
+.result-card li::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0.6rem;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+}
+
+.c-green .card-title { color: #2d7a42; }
+.c-green li::before { background: #5aab6e; }
+.c-red .card-title { color: #b84040; }
+.c-red li::before { background: #e88080; }
+.c-blue .card-title { color: #3a7ca5; }
+.c-blue li::before { background: #3a7ca5; }
+.c-amber .card-title { color: #a06020; }
+.c-amber li::before { background: #e8a840; }
+
+.tips-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 2rem;
+  border: 1px solid #e0d8c8;
+  margin-bottom: 1.25rem;
+}
+.tips-card h3 {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 1.2rem;
+  color: #3a7ca5;
+  margin-bottom: 1.25rem;
+}
+.tip-row {
+  display: flex;
+  gap: 1rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px dashed #e8e0d0;
+  font-size: 0.87rem;
+  line-height: 1.65;
+  color: #333;
+}
+.tip-row:last-child { border-bottom: none; }
+.tip-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  color: #3a7ca5;
+  flex-shrink: 0;
+  margin-top: 0.22rem;
+  min-width: 22px;
+}
+
+.btn-reset {
+  display: none;
+  width: 100%;
+  padding: 0.75rem;
+  background: none;
+  border: 1.5px dashed #d8d0c0;
+  border-radius: 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: #aaa;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.btn-reset:hover { border-color: #3a7ca5; color: #3a7ca5; }
+
+footer {
+  text-align: center;
+  padding: 2rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  color: #ccc;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+</style>
+</head>
+<body>
+
+<!-- Key modal -->
+<div class="key-overlay" id="key-overlay">
+  <div class="key-modal">
+    <div class="key-modal-title">🔑 Your API key</div>
+    <p>This app calls Claude directly from your browser — no server, no backend, no one watching. Grab your key at <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com</a>.</p>
+    <div class="privacy-note">
+      🛡️ Your key lives only in <code>sessionStorage</code> — it disappears when you close the tab. It's sent exclusively to Anthropic's API, nowhere else.
+    </div>
+    <div class="key-row">
+      <input type="text" id="key-input" placeholder="sk-ant-..." autocomplete="off" />
+      <button class="btn-save" id="key-save">Save ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-top">
+    <button class="key-pill" id="key-pill">
+      <span class="key-dot" id="key-dot"></span>
+      <span id="key-label">Set API key</span>
+    </button>
+  </div>
+  <div style="font-size:2.2rem;margin-bottom:0.2rem;">💼</div>
+  <div class="h1">AU Job</div>
+  <div class="h2-italic">Matcher</div>
+  <div class="subtitle">CV · Job Description · AI Match Analysis</div>
+</div>
+
+<div class="main">
+
+  <!-- Input -->
+  <div class="input-card" id="input-card">
+
+    <div class="section-label">📋 Job Description</div>
+    <div class="tab-row" id="job-tab-row">
+      <button class="tab-btn active" data-tab="job-url">🔗 Paste URL</button>
+      <button class="tab-btn" data-tab="job-txt">📝 Paste text</button>
+    </div>
+
+    <div class="tab-panel active" id="tab-job-url">
+      <label>Job posting URL</label>
+      <input type="text" id="job-url" placeholder="https://www.seek.com.au/job/12345..." />
+      <p class="hint">🤖 Claude will fetch and read the page automatically.</p>
+    </div>
+    <div class="tab-panel" id="tab-job-txt">
+      <label>Job description text</label>
+      <textarea id="job-txt" placeholder="Paste the full job posting here — more detail = better analysis..."></textarea>
+    </div>
+
+    <hr class="divider" />
+
+    <div class="section-label">🦘 Your CV</div>
+    <div class="tab-row" id="cv-tab-row">
+      <button class="tab-btn active" data-tab="cv-upload">📎 Upload PDF</button>
+      <button class="tab-btn" data-tab="cv-txt">📝 Paste text</button>
+    </div>
+
+    <div class="tab-panel active" id="tab-cv-upload">
+      <div class="drop-zone" id="drop-zone">
+        <span class="drop-icon" id="drop-icon">📄</span>
+        <div class="drop-label" id="drop-label">Drop your CV here or <strong>click to browse</strong></div>
+      </div>
+      <input type="file" id="file-input" accept=".pdf,.txt" />
+    </div>
+    <div class="tab-panel" id="tab-cv-txt">
+      <label>CV / Resume text</label>
+      <textarea id="cv-txt" placeholder="Paste your full CV here..."></textarea>
+    </div>
+
+    <button class="btn-analyse" id="analyse-btn">🔍 Analyse my match</button>
+    <div class="error-box" id="error-box"></div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" id="loading">
+    <span class="loading-emoji" id="load-emoji">🦘</span>
+    <p id="load-msg">Sending your CV across the Pacific...</p>
+  </div>
+
+  <!-- Results -->
+  <div class="results" id="results">
+    <div class="score-hero">
+      <div class="score-badge" id="score-badge">
+        <span class="n" id="score-num">—</span>
+        <span class="pct">%</span>
+      </div>
+      <div class="score-text">
+        <h2 id="score-label">—</h2>
+        <p id="score-blurb"></p>
+      </div>
+    </div>
+
+    <div class="result-grid">
+      <div class="result-card c-green">
+        <div class="card-head"><span class="card-ico">✅</span><span class="card-title">You've got this</span></div>
+        <ul id="list-have"></ul>
+      </div>
+      <div class="result-card c-red">
+        <div class="card-head"><span class="card-ico">❌</span><span class="card-title">Missing pieces</span></div>
+        <ul id="list-missing"></ul>
+      </div>
+      <div class="result-card c-blue">
+        <div class="card-head"><span class="card-ico">🔄</span><span class="card-title">Close but not quite</span></div>
+        <ul id="list-partial"></ul>
+      </div>
+      <div class="result-card c-amber">
+        <div class="card-head"><span class="card-ico">⭐</span><span class="card-title">Bonus points</span></div>
+        <ul id="list-bonus"></ul>
+      </div>
+    </div>
+
+    <div class="tips-card">
+      <h3>How to land this one 👇</h3>
+      <div id="tips-list"></div>
+    </div>
+
+    <button class="btn-reset" id="reset-btn">← Analyse another job</button>
+  </div>
+
+</div>
+
+<footer>AU Job Matcher · Powered by Claude · Your key never leaves your browser</footer>
+
+<script>
+// Key management
+const overlay = document.getElementById('key-overlay');
+const keyInput = document.getElementById('key-input');
+
+function getKey() { return sessionStorage.getItem('au_matcher_key') || ''; }
+function saveKey(k) { sessionStorage.setItem('au_matcher_key', k); }
+
+function refreshPill() {
+  const k = getKey();
+  document.getElementById('key-dot').className = 'key-dot' + (k ? ' set' : '');
+  document.getElementById('key-label').textContent = k ? 'API key set ✓' : 'Set API key';
+}
+
+document.getElementById('key-pill').addEventListener('click', () => {
+  keyInput.value = getKey();
+  overlay.classList.add('show');
+});
+overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('show'); });
+document.getElementById('key-save').addEventListener('click', () => {
+  saveKey(keyInput.value.trim());
+  refreshPill();
+  overlay.classList.remove('show');
+});
+keyInput.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('key-save').click(); });
+
+refreshPill();
+if (!getKey()) overlay.classList.add('show');
+
+// Tabs
+function initTabs(rowId) {
+  const row = document.getElementById(rowId);
+  row.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      row.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const id = 'tab-' + btn.dataset.tab;
+      // toggle only panels that belong to same group (share same parent)
+      const parent = row.closest('.input-card');
+      const allPanels = parent.querySelectorAll('.tab-panel');
+      // find which panels are "owned" by this tab-row by proximity
+      const rowIndex = Array.from(parent.querySelectorAll('.tab-row')).indexOf(row);
+      const allRows = Array.from(parent.querySelectorAll('.tab-row'));
+      const panelGroups = [];
+      let current = [];
+      allPanels.forEach(p => {
+        if (allRows.some(r => r.nextElementSibling === p || (current.length && current[0].parentElement === p.parentElement))) {
+          current.push(p);
+        }
+      });
+      // simpler: just toggle by id
+      allPanels.forEach(p => {
+        if (p.id === id) p.classList.add('active');
+        else {
+          // only remove if it's a sibling of the active one
+          const targetPanel = document.getElementById(id);
+          if (targetPanel && p.parentElement === targetPanel.parentElement) {
+            p.classList.remove('active');
+          }
+        }
+      });
+    });
+  });
+}
+initTabs('job-tab-row');
+initTabs('cv-tab-row');
+
+// Drop zone
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+let cvFile = null;
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.borderColor='#3a7ca5'; });
+dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor=''; });
+dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.style.borderColor=''; handleFile(e.dataTransfer.files[0]); });
+fileInput.addEventListener('change', () => handleFile(fileInput.files[0]));
+
+function handleFile(f) {
+  if (!f) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    cvFile = { b64: e.target.result.split(',')[1], type: f.type || 'application/pdf', name: f.name };
+    document.getElementById('drop-icon').textContent = '✅';
+    document.getElementById('drop-label').innerHTML = `<span class="file-ready-text">${f.name} — ready!</span>`;
+  };
+  reader.readAsDataURL(f);
+}
+
+// Loading cycle
+const loadFrames = [
+  ['🦘','Sending your CV across the Pacific...'],
+  ['🤖','Claude is reading the job description...'],
+  ['☕','Brewing the analysis (flat white, obviously)...'],
+  ['🐨','Almost there... checking your qualifications...'],
+];
+let loadIdx = 0, loadTimer = null;
+function startLoad() {
+  loadIdx = 0; applyLoad();
+  loadTimer = setInterval(() => { loadIdx = (loadIdx+1)%loadFrames.length; applyLoad(); }, 2200);
+}
+function applyLoad() {
+  document.getElementById('load-emoji').textContent = loadFrames[loadIdx][0];
+  document.getElementById('load-msg').textContent = loadFrames[loadIdx][1];
+}
+function stopLoad() { clearInterval(loadTimer); }
+
+// Main
+document.getElementById('analyse-btn').addEventListener('click', async () => {
+  const key = getKey();
+  if (!key.startsWith('sk-')) { overlay.classList.add('show'); return; }
+
+  const jobUrlActive = document.getElementById('tab-job-url').classList.contains('active');
+  const jobUrl = document.getElementById('job-url').value.trim();
+  const jobTxt = document.getElementById('job-txt').value.trim();
+  const jobSrc = jobUrlActive ? jobUrl : jobTxt;
+  if (!jobSrc) return showErr('🙈 Add a job URL or paste the description first!');
+
+  const cvUploadActive = document.getElementById('tab-cv-upload').classList.contains('active');
+  const cvTxt = document.getElementById('cv-txt').value.trim();
+  if (cvUploadActive && !cvFile) return showErr('📎 Drop your CV PDF in, or switch to paste text.');
+  if (!cvUploadActive && !cvTxt) return showErr('📝 Paste your CV text to continue.');
+
+  setBusy(true); hideErr();
+  document.getElementById('results').style.display = 'none';
+  startLoad();
+
+  try {
+    const content = [];
+
+    if (cvUploadActive && cvFile) {
+      if (cvFile.type === 'application/pdf') {
+        content.push({ type:'document', source:{ type:'base64', media_type:'application/pdf', data:cvFile.b64 } });
+        content.push({ type:'text', text:'The document above is my CV.' });
+      } else {
+        content.push({ type:'text', text:'MY CV:\n'+atob(cvFile.b64) });
+      }
+    } else {
+      content.push({ type:'text', text:'MY CV:\n'+cvTxt });
+    }
+
+    if (jobUrlActive && jobUrl) {
+      content.push({ type:'text', text:'JOB POSTING URL: '+jobUrl+'\nPlease fetch/search this URL to read the job description.' });
+    } else {
+      content.push({ type:'text', text:'JOB DESCRIPTION:\n'+jobTxt });
+    }
+
+    content.push({ type:'text', text: PROMPT });
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key': key,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body: JSON.stringify({
+        model:'claude-opus-4-5',
+        max_tokens:2000,
+        tools:[{ type:'web_search_20250305', name:'web_search' }],
+        system:'You are an expert career coach with deep knowledge of the Australian job market. Respond ONLY with valid JSON — no markdown fences, no preamble, just the raw JSON object.',
+        messages:[{ role:'user', content }]
+      })
+    });
+
+    if (!res.ok) { const e=await res.json().catch(()=>({})); throw new Error(e?.error?.message||'API error '+res.status); }
+
+    const data = await res.json();
+    const txt = data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
+    const parsed = parseJ(txt);
+    stopLoad();
+    render(parsed);
+  } catch(e) {
+    stopLoad();
+    showErr('😬 '+( e.message||'Something went wrong. Check your API key and try again.'));
+    setBusy(false);
+  }
+});
+
+const PROMPT = `Analyse my CV against the job description above. Return ONLY a JSON object with this exact structure:
+{"score":<0-100>,"label":"<Strong Match|Good Match|Partial Match|Low Match>","blurb":"<2-3 honest sentences about the fit, include at least one specific observation>","have":["<4-8 requirements clearly met>"],"missing":["<up to 6 genuinely missing required skills>"],"partial":["<2-5 partially matching areas>"],"bonus":["<2-4 nice-to-haves that could differentiate>"],"tips":["<3-5 specific actionable tips — not generic>"]}
+Score guide: 80+=Strong Match, 60-79=Good Match, 40-59=Partial Match, <40=Low Match. Be honest. Australian job market context where relevant.`;
+
+function parseJ(txt) {
+  try { return JSON.parse(txt.replace(/```json|```/g,'').trim()); }
+  catch { const m=txt.match(/\{[\s\S]*\}/); if(m) return JSON.parse(m[0]); throw new Error("Couldn't parse the response — give it another go!"); }
+}
+
+function render(d) {
+  setBusy(false);
+  const s = d.score??0;
+  document.getElementById('score-num').textContent = s;
+  const badge = document.getElementById('score-badge');
+  badge.className = 'score-badge '+(s>=70?'score-high':s>=45?'score-mid':'score-low');
+  document.getElementById('score-label').textContent = (s>=70?'🎉 ':s>=45?'👍 ':'😅 ')+(d.label??'');
+  document.getElementById('score-blurb').textContent = d.blurb??'';
+  fillList('list-have',    d.have??[]);
+  fillList('list-missing', d.missing??[]);
+  fillList('list-partial', d.partial??[]);
+  fillList('list-bonus',   d.bonus??[]);
+  document.getElementById('tips-list').innerHTML = (d.tips??[]).map((t,i)=>
+    `<div class="tip-row"><span class="tip-num">${String(i+1).padStart(2,'0')}</span><span>${t}</span></div>`
+  ).join('');
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('reset-btn').style.display = 'block';
+  document.getElementById('input-card').style.display = 'none';
+  document.getElementById('results').scrollIntoView({behavior:'smooth'});
+}
+
+function fillList(id, arr) {
+  document.getElementById(id).innerHTML = arr.map(t=>`<li>${t}</li>`).join('');
+}
+
+document.getElementById('reset-btn').addEventListener('click', () => {
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('reset-btn').style.display = 'none';
+  document.getElementById('input-card').style.display = 'block';
+  hideErr(); cvFile = null;
+  document.getElementById('drop-icon').textContent = '📄';
+  document.getElementById('drop-label').innerHTML = 'Drop your CV here or <strong>click to browse</strong>';
+  fileInput.value = '';
+});
+
+function setBusy(b) {
+  document.getElementById('loading').style.display = b?'block':'none';
+  document.getElementById('analyse-btn').disabled = b;
+}
+function showErr(m) { const b=document.getElementById('error-box'); b.textContent=m; b.style.display='block'; setBusy(false); }
+function hideErr() { document.getElementById('error-box').style.display='none'; }
+</script>
+</body>
+</html>
