@@ -714,7 +714,7 @@ document.getElementById('analyse-btn').addEventListener('click', async () => {
         'anthropic-dangerous-direct-browser-access':'true'
       },
       body: JSON.stringify({
-        model:'claude-opus-4-5',
+        model:'claude-sonnet-4-6',
         max_tokens:2000,
         tools:[{ type:'web_search_20250305', name:'web_search' }],
         system:'You are an expert career coach with deep knowledge of the Australian job market. Respond ONLY with valid JSON — no markdown fences, no preamble, just the raw JSON object.',
